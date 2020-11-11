@@ -109,6 +109,7 @@ type AST_NODE_CALL
 	argtail			as ASTNODE_ ptr
 	strtail 		as AST_TMPSTRLIST_ITEM ptr  '' fixed-length string argument copy-back list
 	tmpres          as FBSYMBOL ptr					'' temp result structure, if needed
+	retused         as boolean ''gas64  if true (default) returned value will be used
 end type
 
 type AST_NODE_ARG

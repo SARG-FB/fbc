@@ -80,6 +80,7 @@ function astNewCALL _
 	n->sym = sym
 	n->l = ptrexpr
 	n->call.args = 0
+	n->call.retused=true ''gas64
 
 	if( sym <> NULL ) then
 		n->call.currarg	= symbGetProcHeadParam( sym )
@@ -136,6 +137,8 @@ private sub hCopyStringsBack( byval f as ASTNODE ptr )
 	do while( n <> NULL )
 
 		t = rtlStrAssign( n->srctree, astNewVAR( n->sym ) )
+		t->call.retused=false ''gas64 fb_StrAssign() returns a value never used
+
 		astLoad( t )
 		astDelNode( t )
 
@@ -258,6 +261,8 @@ function astLoadCALL( byval n as ASTNODE ptr ) as IRVREG ptr
 		'' SUB or function result ignored?
 		if( astGetDataType( n ) = FB_DATATYPE_VOID ) then
 			vr = NULL
+		elseif n->call.retused=false then ''gas64 but benefit whatever backend is
+			vr = null
 		else
 
 			'' va_list 
