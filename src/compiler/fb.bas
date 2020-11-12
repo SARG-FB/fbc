@@ -506,7 +506,7 @@ sub fbGlobalInit()
 	env.clopt.gfx           = FALSE
 	env.clopt.pic           = FALSE
 	env.clopt.msbitfields   = FALSE
-	env.clopt.stacksize     = FB_DEFSTACKSIZE
+	env.clopt.stacksize = iif(fbis64bit , FB_DEFSTACKSIZE64 , FB_DEFSTACKSIZE32)
 	env.clopt.objinfo       = TRUE
 	env.clopt.showincludes  = FALSE
 	env.clopt.modeview      = FB_DEFAULT_MODEVIEW
@@ -603,9 +603,10 @@ sub fbSetOption( byval opt as integer, byval value as integer )
 	case FB_COMPOPT_PIC
 		env.clopt.pic = value
 	case FB_COMPOPT_STACKSIZE
-		env.clopt.stacksize = value
-		if (env.clopt.stacksize < FB_MINSTACKSIZE) then
-			env.clopt.stacksize = FB_MINSTACKSIZE
+		if fbis64bit then
+			env.clopt.stacksize = iif (value<FB_MINSTACKSIZE64 , FB_MINSTACKSIZE64 ,value)
+		else
+			env.clopt.stacksize = iif (value<FB_MINSTACKSIZE32 , FB_MINSTACKSIZE32 , value)
 		end if
 	case FB_COMPOPT_OBJINFO
 		env.clopt.objinfo = value
