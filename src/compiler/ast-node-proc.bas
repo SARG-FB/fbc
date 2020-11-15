@@ -104,7 +104,7 @@ private sub hDelProcNode( byval n as ASTNODE ptr )
 end sub
 '' Check if a call is after a LINK in this case returned value is never used
 '' except for FB_THREADCALL
-sub retused_fixing( byval n as ASTNODE ptr, plinkon as boolean)
+sub retused_fixing( byval n as ASTNODE ptr, byval plinkon as boolean)
 	dim as boolean vlinkon=false
 	if n->class = AST_NODECLASS_DBG then exit sub
 	if n->class = AST_NODECLASS_LINK then
