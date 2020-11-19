@@ -102,29 +102,6 @@ private sub hDelProcNode( byval n as ASTNODE ptr )
 
 	astDelNode( n )
 end sub
-'' Check if a call is after a LINK in this case returned value is never used
-'' except for FB_THREADCALL
-sub retused_fixing( byval n as ASTNODE ptr, byval plinkon as boolean)
-	dim as boolean vlinkon=false
-	if n->class = AST_NODECLASS_DBG then exit sub
-	if n->class = AST_NODECLASS_LINK then
-		vlinkon=true
-	elseif astIsCall(n) then
-		if plinkon then
-			''returned value from FB_THREADCALL is always used
-			if *n->sym->id.name<>"FB_THREADCALL" then
-				n->call.retused=false
-			end if
-		end if
-	end if
-
-	if( n->l ) then
-		retused_fixing( n->l,vlinkon )
-	end if
-	if( n->r ) then
-		retused_fixing( n->r,vlinkon )
-	end if
-end sub
 
 ''::::
 private sub hProcFlush _
@@ -170,10 +147,6 @@ private sub hProcFlush _
 	n = p->l
 	do while( n <> NULL )
 		nxt = n->next
-
-		'''check return value will be used ?
-		if env.clopt.backend = FB_BACKEND_GAS64 then retused_fixing(n,true)
-
 		astLoad( n )
 		astDelNode( n )
 		n = nxt
