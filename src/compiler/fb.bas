@@ -506,7 +506,7 @@ sub fbGlobalInit()
 	env.clopt.gfx           = FALSE
 	env.clopt.pic           = FALSE
 	env.clopt.msbitfields   = FALSE
-	env.clopt.stacksize = iif(fbis64bit , FB_DEFSTACKSIZE64 , FB_DEFSTACKSIZE32)
+	env.clopt.stacksize     = 0 '' default will be set by fbSetOption() called from hParseArgs()
 	env.clopt.objinfo       = TRUE
 	env.clopt.showincludes  = FALSE
 	env.clopt.modeview      = FB_DEFAULT_MODEVIEW
@@ -603,10 +603,18 @@ sub fbSetOption( byval opt as integer, byval value as integer )
 	case FB_COMPOPT_PIC
 		env.clopt.pic = value
 	case FB_COMPOPT_STACKSIZE
-		if fbis64bit then
-			env.clopt.stacksize = iif (value<FB_MINSTACKSIZE64 , FB_MINSTACKSIZE64 ,value)
+		'' check stacksize and value was never set yet?
+		if( value < 0 ) then
+			if( env.clopt.stacksize = 0 ) then
+				env.clopt.stacksize = iif( fbIs64bit(), FB_DEFSTACKSIZE64, FB_DEFSTACKSIZE32 )
+			end if
 		else
-			env.clopt.stacksize = iif (value<FB_MINSTACKSIZE32 , FB_MINSTACKSIZE32 , value)
+			'' otherwise, use the new value and ensure is at least the minimum size
+			if fbis64bit then
+				env.clopt.stacksize = iif (value<FB_MINSTACKSIZE64 , FB_MINSTACKSIZE64 ,value)
+			else
+				env.clopt.stacksize = iif (value<FB_MINSTACKSIZE32 , FB_MINSTACKSIZE32 , value)
+			end if
 		end if
 	case FB_COMPOPT_OBJINFO
 		env.clopt.objinfo = value
