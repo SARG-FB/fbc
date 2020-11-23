@@ -762,7 +762,8 @@ declare function astNewLINK _
 	( _
 		byval l as ASTNODE ptr, _
 		byval r as ASTNODE ptr, _
-		byval ret_left as integer = TRUE _
+		byval ret_left as integer = TRUE, _
+		byval discard_result as integer = TRUE _
 	) as ASTNODE ptr
 
 declare function astNewSTACK _

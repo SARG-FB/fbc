@@ -299,5 +299,5 @@ function rtlThreadCall(byval callexpr as ASTNODE ptr) as ASTNODE ptr
         param = symbGetProcPrevParam( proc, param )
     next
 
-	function = astNewLINK( t, expr, FALSE )
+	function = astNewLINK( t, expr, FALSE, FALSE )
 end function

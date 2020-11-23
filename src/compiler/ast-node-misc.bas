@@ -223,24 +223,20 @@ function astNewLINK _
 	( _
 		byval l as ASTNODE ptr, _
 		byval r as ASTNODE ptr, _
-		byval ret_left as integer _
+		byval ret_left as integer, _
+		byval discard_result as integer _
 	) as ASTNODE ptr
 
 	dim as ASTNODE ptr n = any
 
-	''gas64 but also valuable for the other backends
-	if l<>0 then
-		if astIsCALL(l) then
-			''returned value from FB_THREADCALL is always used even after a LINK
-			if *l->sym->id.name<>"FB_THREADCALL" then
+	if( discard_result = TRUE ) then
+		if( l <> NULL ) then
+			if( astIsCALL( l ) ) then
 				astSetType(l,FB_DATATYPE_VOID,NULL)
 			end if
 		end if
-	end if
-	''gas64 but also valuable for the other backends
-	if r<>0 and l<>0 then
-		if astIsCALL(r) then
-			if *r->sym->id.name<>"FB_THREADCALL" then
+		if( (r <> NULL) and (l <> NULL) ) then
+			if astIsCALL(r) then
 				astSetType(r,FB_DATATYPE_VOID,NULL)
 			end if
 		end if
@@ -253,9 +249,6 @@ function astNewLINK _
 	if( r = NULL ) then
 		return l
 	end if
-
-
-
 	if( ret_left ) then
 		n = astNewNode( AST_NODECLASS_LINK, astGetFullType( l ), l->subtype )
 	else
