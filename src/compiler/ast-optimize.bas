@@ -1534,10 +1534,7 @@ private function hOptStrAssignment _
 			''   / \           / \
 			''  b   expr      b   expr
 			if( is_wstr = FALSE ) then
-				'' not handled by astnewlink so forcing to VOID as returned value never used after FB_STRASSIGN	gas64							   
-				var t=rtlStrAssign( l, astUpdStrConcat( r ) )
-				astSetType(t,FB_DATATYPE_VOID,NULL)
-				function=t
+				function = rtlStrAssign( l, astUpdStrConcat( r ) )
 			else
 				function = rtlWstrAssign( l, astUpdStrConcat( r ) )
 			end if

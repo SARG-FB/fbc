@@ -136,8 +136,6 @@ private sub hCopyStringsBack( byval f as ASTNODE ptr )
 	do while( n <> NULL )
 
 		t = rtlStrAssign( n->srctree, astNewVAR( n->sym ) )
-		astSetType(t,FB_DATATYPE_VOID,NULL) ''gas64
-
 		astLoad( t )
 		astDelNode( t )
 
