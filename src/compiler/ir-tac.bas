@@ -10,6 +10,7 @@
 #include once "flist.bi"
 #include once "ir.bi"
 #include once "hlp.bi"
+#include once "debug-internal.bi"
 
 type IRTAC_CTX
 	tacTB			as TFLIST
@@ -131,16 +132,6 @@ declare sub hFreePreservedRegs _
 
 #if __FB_DEBUG__
 declare sub hDumpFreeIntRegs( )
-declare sub hDump _
-	( _
-		byval op as integer, _
-		byval v1 as IRVREG ptr, _
-		byval v2 as IRVREG ptr, _
-		byval vr as IRVREG ptr, _
-		byval wrapline as integer = FALSE _
-	)
-declare function tacvregDump( byval tacvreg as IRTACVREG ptr ) as string
-declare sub tacDump( byval tac as IRTAC ptr )
 #endif
 
 declare sub _flush _

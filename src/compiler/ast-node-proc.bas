@@ -312,23 +312,6 @@ function astAdd( byval n as ASTNODE ptr ) as ASTNODE ptr
 	function = n
 end function
 
-#if __FB_DEBUG__
-private function hNodeIsFromCurrentProc( byval n as ASTNODE ptr ) as integer
-	dim as ASTNODE ptr i = any
-
-	i = ast.proc.curr->l
-	while( i )
-
-		if( i = n ) then
-			function = TRUE
-			exit while
-		end if
-
-		i = i->next
-	wend
-end function
-#endif
-
 function astAddAfter _
 	( _
 		byval n as ASTNODE ptr, _

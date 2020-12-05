@@ -405,10 +405,6 @@ end type
 declare function emitInit( ) as integer
 declare sub emitEnd( )
 
-#if __FB_DEBUG__
-declare function emitDumpRegName( byval dtype as integer, byval reg as integer ) as string
-#endif
-
 declare function emitGetRegClass _
 	( _
 		byval dclass as integer _

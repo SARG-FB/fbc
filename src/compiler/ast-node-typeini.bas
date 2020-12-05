@@ -782,26 +782,6 @@ private function hWalk _
 	return astNewLINK( hWalk( n->l, n ), hWalk( n->r, n ) )
 end function
 
-#if __FB_DEBUG__
-'' Count the TYPEINI nodes in a tree
-function astCountTypeinis( byval n as ASTNODE ptr ) as integer
-	dim as integer count = any
-
-	count = 0
-
-	if( n ) then
-		if( astIsTYPEINI( n ) ) then
-			count += 1
-		end if
-
-		count += astCountTypeinis( n->l )
-		count += astCountTypeinis( n->r )
-	end if
-
-	function = count
-end function
-#endif
-
 function astTypeIniUpdate( byval tree as ASTNODE ptr ) as ASTNODE ptr
 	dim as ASTNODE ptr tempvarinitcode = any
 	dim as ASTNODE treeparent = any

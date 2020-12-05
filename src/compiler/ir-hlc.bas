@@ -104,6 +104,7 @@
 #include once "flist.bi"
 #include once "lex.bi"
 #include once "ir-private.bi"
+#include once "debug-internal.bi"
 
 '' The stack of nested sections allows us to go back and emit text to
 '' the headers of parent sections, while already working on emitting

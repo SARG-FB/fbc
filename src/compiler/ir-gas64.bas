@@ -112,6 +112,7 @@ rbp-y -->  local vars
 #include once "lex.bi"
 #include once "ir-private.bi"
 #include once "stabs.bi"
+#include once "debug-internal.bi"
 
 '' comment to not get debug data
 '#define debugdata
@@ -1259,7 +1260,7 @@ private sub _emitdbg(byval op as integer,byval proc as FBSYMBOL ptr,byval lnum a
 end sub
 ''================= end of proc for debugging =====================
 
-private sub hemitudt( byval sym as FBSYMBOL ptr )
+sub hemitudt2( byval sym as FBSYMBOL ptr )
 
 	if( sym = NULL ) then
 		return
@@ -1287,108 +1288,7 @@ private sub hemitudt( byval sym as FBSYMBOL ptr )
 
 	ctx.section = oldsection
 end sub
-#if __FB_DEBUG__ <> 0
-private function hemittype _
-	( _
-	byval dtype as integer, _
-	byval subtype as FBSYMBOL ptr _
-	) as string
 
-	dim as string s
-	dim as integer ptrcount = any
-
-	ptrcount = typeGetPtrCnt( dtype )
-	dtype = typeGetDtOnly( dtype )
-
-	select case as const( dtype )
-		case FB_DATATYPE_VOID
-			'' "void*" isn't allowed in L L V M IR, "i8*" must be used instead,
-			'' that's why FB_DATATYPE_VOID is mapped to "i8" in the above
-			'' table. "void" can only be used for subs.
-			if( ptrcount = 0 ) then
-				s = "[void]"
-			else
-				s = "[void ptr]"
-			end if
-
-		case FB_DATATYPE_STRUCT, FB_DATATYPE_ENUM
-			if( subtype ) then
-				hEmitUDT( subtype )
-				s = *symbGetMangledName( subtype )
-			elseif( dtype = FB_DATATYPE_ENUM ) then
-				s = "[enum=integer]"
-			else
-				s = "[void]"
-			end if
-
-		case FB_DATATYPE_FUNCTION
-			assert( ptrcount > 0 )
-			ptrcount -= 1
-			s="datatype function ptr ="+*symbGetMangledName(subtype)+ "*"
-		case FB_DATATYPE_CHAR, FB_DATATYPE_WCHAR
-			'' Emit ubyte instead of char,
-			'' and ubyte/ushort/uinteger instead of wchar_t
-			s = "[ubyte or ushort or uinteger]"
-
-		case FB_DATATYPE_FIXSTR
-			'' Ditto (but typeGetRemapType() returns FB_DATATYPE_FIXSTR,
-			'' so do it manually)
-			s = "[ubyte]"
-
-		case else
-			s = typedumpToStr(dtype,0)
-	end select
-
-	if( ptrcount > 0 ) then
-		s += string( ptrcount, "*" )
-	end if
-
-	function = s
-end function
-private function vregdumpfull( byval v as IRVREG ptr ) as string
-	return vregDumpToStr(v)+iif(v<>0," symbdump="+symbdumpToStr(v->sym),"")
-end function
-private function vregpretty( byval v as IRVREG ptr ) as string
-	dim s as string
-	select case( v->typ )
-		case IR_VREGTYPE_IMM
-			if( typeGetClass( v->dtype ) = FB_DATACLASS_FPOINT ) then
-				s = str( v->value.f )
-			else
-				s = str( v->value.i )
-			end if
-
-		case IR_VREGTYPE_REG
-			if( v->sym ) then
-				s = *symbGetMangledName( v->sym )
-			else
-				s = "vr" & v->reg
-			end if
-
-		case else
-			if( v->sym ) then
-				s = *symbGetMangledName( v->sym )
-			end if
-	end select
-
-	if( v->vidx ) then
-		if( len( s ) > 0 ) then
-			s += "+"
-		end if
-		s += vregPretty( v->vidx )
-	end if
-	if( v->ofs ) then
-		s += "+" & v->ofs
-	end if
-	if( v->mult ) then
-		s += " (mult) *" & v->mult
-	end if
-
-	s += " " + typedumpToStr( v->dtype, v->subtype )
-
-	function = s
-end function
-#endif
 ''=======================================
 '' if branch (test) marks registers inuse
 ''=======================================
@@ -1935,75 +1835,7 @@ private sub _end( )
 	irhlEnd( ) ''clear some lists
 end sub
 
-#if __FB_DEBUG__ <> 0
-	private function hemitprocheader(byval proc as FBSYMBOL ptr) as string
 
-		dim as string ln
-		dim as integer dtype = any
-		dim as FBSYMBOL ptr subtype = Any
-
-
-
-		'' function result type (is 'void' for subs)
-		ln=typedumpToStr(typeGetDtAndPtrOnly( symbGetProcRealType( proc ) ), symbGetProcRealSubtype( proc ) )
-		ln += " "+*symbGetMangledName( proc )
-
-		'' Parameter list
-		ln += " ( "
-
-		'' if returning a struct, there's an extra parameter
-		dim as FBSYMBOL ptr hidden = NULL
-		if( symbProcreturnsOnStack( proc ) ) then
-			hidden = proc->proc.ext->res
-			asm_info("hidden")
-			if hidden<>0 then
-				ln += hEmitType( typeAddrOf( symbGetType( hidden ) ), symbGetSubtype( hidden ) )
-				ln+=" / "+typedumpToStr( typeAddrOf( symbGetType( hidden ) ), symbGetSubtype( hidden ))
-				ln += " " + *symbGetMangledName( hidden ) + "$"
-			end if
-
-			if( symbGetProcParams( proc ) > 0 ) then
-				ln += ", "
-			end if
-		end if
-
-		var param = symbGetProcLastParam( proc )
-		while( param )
-			if( symbGetParamMode( param ) = FB_PARAMMODE_VARARG ) then
-				ln += "..."
-			else
-				symbGetRealParamDtype( param, dtype, subtype )
-				ln+=typedumpToStr( dtype, subtype )
-				''with naked no parameter name
-				if symbIsNaked(proc)=false then
-					if symbGetParamVar( param )<>0 then ln+=" "+*symbGetMangledName(symbGetParamVar( param ))
-				end if
-			end if
-
-			param = symbGetProcPrevParam( proc, param )
-			if( param ) then
-				ln += ", "
-			end if
-
-		wend
-
-		ln += " )"
-		ln+=" "+symbdumpToStr(proc)
-
-		if( symbIsExport( proc ) ) then
-			ln += " / dllexport"
-		elseif( symbIsPrivate( proc ) ) then
-			ln += " / private"
-		end if
-
-
-		if symbGetIsFuncPtr( proc ) then ln+=" / Accessed by funcptr"
-		if (Not symbGetIsAccessed( proc )) then ln+=" / Not accessed --> not used ??"
-		if  symbIsNaked(proc) then ln+=" / Naked proc"
-
-		function = ln
-	end function
-#endif
 
 private sub hemitvariable( byval sym as FBSYMBOL ptr )
 	dim as integer is_global = any, length = any,lgt=any
@@ -2170,7 +2002,7 @@ private sub hemitstruct( byval sym as FBSYMBOL ptr )
 	'' Check every field for non-emitted subtypes
 	fld = symbUdtGetFirstField( sym )
 	while( fld )
-		hEmitUDT( symbGetSubtype( fld ) )
+		hEmitUDT2( symbGetSubtype( fld ) )
 		fld = symbUdtGetnextField( fld )
 	wend
 
@@ -6461,7 +6293,7 @@ private sub _emitprocbegin(byval proc as FBSYMBOL ptr,byval initlabel as FBSYMBO
 
 	''reg_freeall ''not used by kept in case of checking registers not freed and so on
 
-	asm_info( hEmitProcHeader( proc)  )
+	asm_info( hdumpProcHeader( proc)  )
 
 	''variadic ?
 	var param = symbGetProcTailParam( proc )

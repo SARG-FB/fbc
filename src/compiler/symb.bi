@@ -736,6 +736,7 @@ type FB_SYMBID
 end type
 
 ''
+
 type FBSYMBOL
 	class			as FB_SYMBCLASS
 	attrib			as FB_SYMBATTRIB
@@ -2604,34 +2605,6 @@ declare sub symbForEachGlobal _
 		byval symclass as integer, _
 		byval callback as sub( byval as FBSYMBOL ptr ) _
 	)
-
-#if __FB_DEBUG__
-declare function typeDumpToStr _
-	( _
-		byval dtype as integer, _
-		byval subtype as FBSYMBOL ptr, _
-		byval verbose as boolean = false _
-	) as string
-'' For debugging, e.g. use like this:
-''  symbTrace(a), "(replacing this)"
-''  symbTrace(b), "(with this)"
-#define symbTrace( s ) print __FUNCTION__ + "(" & __LINE__ & "): "; symbDumpToStr( s )
-
-declare function symbDumpToStr _
-	( _
-		byval s as FBSYMBOL ptr, _
-		byval verbose as boolean = false _
-	) as string
-
-declare sub symbDump( byval s as FBSYMBOL ptr )
-declare sub symbDumpNamespace( byval ns as FBSYMBOL ptr )
-declare sub symbDumpChain( byval chain_ as FBSYMCHAIN ptr )
-
-'' FBARRAY: 6 pointer/integer fields + the dimTB with 3 integer fields per dimension
-#define symbDescriptorHasRoomFor( sym, dimensions ) (symbGetLen( sym ) = env.pointersize * (((dimensions) * 3) + 6))
-#endif
-
-declare function symbDumpPrettyToStr( byval sym as FBSYMBOL ptr ) as string
 
 ''
 '' inter-module globals

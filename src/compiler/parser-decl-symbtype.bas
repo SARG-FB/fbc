@@ -8,6 +8,7 @@
 #include once "parser.bi"
 #include once "ast.bi"
 #include once "rtl.bi"
+#include once "debug-internal.bi"
 
 function cConstIntExpr _
 	( _

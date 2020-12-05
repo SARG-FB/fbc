@@ -958,7 +958,7 @@ end function
 '' temp destructors handling
 '':::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
-private function hHasDtor( byval sym as FBSYMBOL ptr ) as integer
+function hHasDtor( byval sym as FBSYMBOL ptr ) as integer
 	assert( symbIsVar( sym ) )
 	assert( symbIsRef( sym ) = FALSE )
 
@@ -977,19 +977,6 @@ private function hHasDtor( byval sym as FBSYMBOL ptr ) as integer
 
 	end select
 end function
-
-#if __FB_DEBUG__
-sub astDtorListDump( )
-	dim as AST_DTORLIST_ITEM ptr i = any
-
-	print "-------------- dtorlist: ------------------"
-	i = listGetTail( @ast.dtorlist )
-	while( i )
-		print "    ";symbDumpToStr( i->sym );" cookie: ";i->cookie;" refcount: ";i->refcount;" has dtor? ";hHasDtor( i->sym )
-		i = listGetPrev( i )
-	wend
-end sub
-#endif
 
 sub astDtorListAdd( byval sym as FBSYMBOL ptr )
 	dim as AST_DTORLIST_ITEM ptr n = any
