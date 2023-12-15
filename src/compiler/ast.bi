@@ -1334,9 +1334,6 @@ declare sub astReplaceFwdref _
 		byval newsubtype as FBSYMBOL ptr _
 	)
 
-#if __FB_DEBUG__
-declare sub astDtorListDump( )
-#endif
 declare sub astDtorListAdd( byval sym as FBSYMBOL ptr )
 declare sub astDtorListAddRef( byval sym as FBSYMBOL ptr )
 declare sub astDtorListRemoveRef( byval sym as FBSYMBOL ptr )
@@ -1528,22 +1525,5 @@ extern ast as ASTCTX
 extern ast_opTB( 0 to AST_OPCODES-1 ) as AST_OPINFO
 
 declare function astDumpOpToStr( byval op as AST_OP ) as string
-
-declare sub astDumpTree _
-	( _
-		byval n as ASTNODE ptr, _
-		byval col as integer = 0 _
-	)
-
-declare sub astDumpList _
-	( _
-		byval n as ASTNODE ptr, _
-		byval col as integer = 0 _
-	)
-
-#if __FB_DEBUG__
-declare function astDumpInline( byval n as ASTNODE ptr ) as string
-declare sub astDumpSmall( byval n as ASTNODE ptr, byref prefix as string = "" )
-#endif
 
 #endif '' __AST_BI__

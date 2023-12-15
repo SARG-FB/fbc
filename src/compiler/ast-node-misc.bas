@@ -676,7 +676,7 @@ type NameInfo
 end type
 
 '':::::
-private sub dbg_astOutput _
+sub dbg_astOutput _
 	( _
 		byref s as string, _
 		byval col as integer, _
@@ -888,7 +888,7 @@ function astDumpOpToStr( byval op as AST_OP ) as string
 end function
 
 '':::::
-private function hAstNodeClassToStr _
+function hAstNodeClassToStr _
 	( _
 		byval c as AST_NODECLASS _
 	) as string
@@ -929,7 +929,7 @@ private function hAstNodeTypeToStr _
 end function
 
 '':::::
-private function hAstNodeToStr _
+function hAstNodeToStr _
 	( _
 		byval n as ASTNODE ptr _
 	) as string
@@ -1011,213 +1011,4 @@ private function hAstNodeToStr _
 
 end function
 
-'':::::
-private sub astDumpTreeEx _
-	( _
-		byval n as ASTNODE ptr, _
-		byval col as integer, _
-		byval just as integer, _
-		byval depth as integer _
-	)
 
-	if( col <= 4 or col >= 76 ) then
-		col = 40
-	end if
-
-	if( n = NULL ) then
-		print "<NULL>"
-		exit sub
-	end if
-
-	dim as string s
-	's += "[" + hex( n, 8 ) + "] "
-	s += hAstNodeToStr( n )
-#if __FB_DEBUG__
-	s += " " + typeDumpToStr( n->dtype, n->subtype )
-#endif
-	dbg_astOutput( s, col, just, depth )
-
-	depth += 1
-
-	if( n->l <> NULL ) then
-		if( n->r <> NULL ) then
-			dbg_astOutput( "/ \", col-2, 0 )
-		else
-			dbg_astOutput( "/", col-2, 0 )
-		end if
-	elseif( n->r <> NULL ) then
-		dbg_astOutput( "  \", col-2, 0 )
-	else
-		dbg_astOutput( "", 0, 0 )
-	end if
-
-	if( n->l <> NULL ) then
-		astDumpTreeEx( n->l, col-2, -1, depth )
-	end if
-	if( n->r <> NULL ) then
-		astDumpTreeEx( n->r, col+2, 1, depth )
-	end if
-
-end sub
-
-'':::::
-sub astDumpTree _
-	( _
-		byval n as ASTNODE ptr, _
-		byval col as integer _
-	)
-
-	astDumpTreeEx( n, col, -1, 0 )
-
-end sub
-
-''::::
-sub astDumpList _
-	( _
-		byval n as ASTNODE ptr, _
-		byval col as integer _
-	)
-
-	do while( n <> NULL )
-		astDumpTree( n, col )
-		n = n->next
-	loop
-
-end sub
-
-#if __FB_DEBUG__
-function astDumpInline( byval n as ASTNODE ptr ) as string
-	static reclevel as integer
-
-	reclevel += 1
-
-	dim s as string
-	if( n = NULL ) then
-		s = "<NULL>"
-	else
-		s += hAstNodeClassToStr( n->class )
-		's += typeDump( n->dtype, n->subtype )
-
-		var have_data = (n->sym <> NULL) or (n->l <> NULL) or (n->r <> NULL)
-		select case as const( n->class )
-		case AST_NODECLASS_BOP, AST_NODECLASS_UOP, AST_NODECLASS_CONST
-			have_data or= TRUE
-		end select
-
-		if( have_data ) then
-			s += "( "
-		end if
-
-		select case as const( n->class )
-		case AST_NODECLASS_BOP, AST_NODECLASS_UOP
-			s += astDumpOpToStr( n->op.op ) + ", "
-		case AST_NODECLASS_CONST
-			if( typeGetClass( n->dtype ) = FB_DATACLASS_FPOINT ) then
-				s += str( astConstGetFloat( n ) ) + ", "
-			else
-				s += str( astConstGetInt( n ) ) + ", "
-			end if
-		end select
-
-		if( n->sym ) then
-			s += *symbGetName( n->sym ) + ", "
-		end if
-		if( n->l ) then
-			s += astDumpInline( n->l ) + ", "
-		end if
-		if( n->r ) then
-			s += astDumpInline( n->r ) + ", "
-		end if
-
-		if( have_data ) then
-			if( right( s, 2 ) = ", " ) then
-				s = left( s, len( s ) - 2 )
-			end if
-			s += " )"
-		end if
-	end if
-
-	reclevel -= 1
-
-	function = s
-end function
-
-sub astDumpSmall( byval n as ASTNODE ptr, byref prefix as string )
-	static reclevel as integer
-
-	reclevel += 1
-
-	dim s as string
-
-	'' Indentation
-	s += space( (reclevel - 1) * 4 ) + prefix
-
-	if( n = NULL ) then
-		s += "<NULL>"
-	else
-		's += "[" + hex( n ) + "] "
-		s += hAstNodeClassToStr( n->class )
-		s += typeDumpToStr( n->dtype, n->subtype )
-
-		select case as const( n->class )
-		case AST_NODECLASS_MEM
-			select case n->mem.op
-			case AST_OP_MEMCLEAR
-				s += " memclear"
-			case AST_OP_MEMMOVE
-				s += " memmove"
-			end select
-			s += " bytes=" & n->mem.bytes
-		case AST_NODECLASS_VAR     : if( n->var_.ofs ) then s += " ofs=" & n->var_.ofs
-		case AST_NODECLASS_DEREF   : if( n->ptr.ofs  ) then s += " ofs=" & n->ptr.ofs
-		case AST_NODECLASS_OFFSET  : if( n->ofs.ofs  ) then s += " ofs=" & n->ofs.ofs
-		case AST_NODECLASS_IDX     : if( n->idx.ofs  ) then s += " ofs=" & n->idx.ofs
-			if( n->idx.mult <> 1 ) then s += " mult=" & n->idx.mult
-		case AST_NODECLASS_BOP, AST_NODECLASS_UOP
-			s += " " + astDumpOpToStr( n->op.op )
-		case AST_NODECLASS_CONV
-			if( n->cast.doconv = FALSE and n->cast.convconst = FALSE ) then
-				s += " noconv"
-			elseif( n->cast.doconv ) then
-				s += " conv"
-			elseif( n->cast.convconst ) then
-				s += " convconst"
-			end if
-		case AST_NODECLASS_CONST
-			if( typeGetClass( n->dtype ) = FB_DATACLASS_FPOINT ) then
-				s += " " + str( astConstGetFloat( n ) )
-			else
-				s += " " + str( astConstGetInt( n ) )
-			end if
-		end select
-
-		if( n->sym ) then
-			#if 1
-				s += " "
-				if( symbIsProc( n->sym ) ) then
-					s += symbMethodToStr( n->sym )
-				elseif n->sym->id.name = NULL then
-					s += *n->sym->id.alias
-				else
-					s += *n->sym->id.name
-				end if
-			#else
-				s += " " + symbDumpToStr( n->sym )
-			#endif
-		end if
-	end if
-
-	print s
-
-	if( n ) then
-		if( n->l ) then
-			astDumpSmall( n->l, "l: " )
-		end if
-		if( n->r ) then
-			astDumpSmall( n->r, "r: " )
-		end if
-	end if
-
-	reclevel -= 1
-end sub
-#endif

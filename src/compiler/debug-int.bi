@@ -1,6 +1,8 @@
 ''debug_int.bi
 ''debug internal
 
+
+
 #if (__FB_DEBUG__ <> 0) orelse defined(__GAS64_DEBUG__)
 declare function vregDumpToStr( byval v as IRVREG ptr ) as string
 declare sub vregDump( byval v as IRVREG ptr )
@@ -34,5 +36,42 @@ declare sub hDump _
 	)
 declare function tacvregDump( byval tacvreg as IRTACVREG ptr ) as string
 declare sub tacDump( byval tac as IRTAC ptr )
+declare sub astDtorListDump( )
 
+
+declare sub astDumpTree _
+	( _
+		byval n as ASTNODE ptr, _
+		byval col as integer = 0 _
+	)
+
+declare sub astDumpList _
+	( _
+		byval n as ASTNODE ptr, _
+		byval col as integer = 0 _
+	)
+
+declare function astDumpInline( byval n as ASTNODE ptr ) as string
+declare sub astDumpSmall( byval n as ASTNODE ptr, byref prefix as string = "" )
+
+declare sub dbg_astOutput _
+	( _
+		byref s as string, _
+		byval col as integer, _
+		byval just as integer, _
+		byval depth as integer = -1 _
+	)
+
+declare function hHasDtor( byval sym as FBSYMBOL ptr ) as integer
+declare function hAstNodeClassToStr _
+	( _
+		byval c as AST_NODECLASS _
+	) as string
+	
+declare function hAstNodeToStr _
+	( _
+		byval n as ASTNODE ptr _
+	) as string
+	
 #endif
+
