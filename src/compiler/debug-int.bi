@@ -6,6 +6,32 @@
 #if (__FB_DEBUG__ <> 0) orelse defined(__GAS64_DEBUG__)
 declare function vregDumpToStr( byval v as IRVREG ptr ) as string
 declare sub vregDump( byval v as IRVREG ptr )
+
+declare function typeDumpToStr _
+	( _
+		byval dtype as integer, _
+		byval subtype as FBSYMBOL ptr, _
+		byval verbose as boolean = false _
+	) as string
+'' For debugging, e.g. use like this:
+''  symbTrace(a), "(replacing this)"
+''  symbTrace(b), "(with this)"
+#define symbTrace( s ) print __FUNCTION__ + "(" & __LINE__ & "): "; symbDumpToStr( s )
+
+declare function symbDumpToStr _
+	( _
+		byval s as FBSYMBOL ptr, _
+		byval verbose as boolean = false _
+	) as string
+
+declare sub symbDump( byval s as FBSYMBOL ptr, byval verbose as integer = 0 )
+declare sub symbDumpNamespace( byval ns as FBSYMBOL ptr )
+declare sub symbDumpChain( byval chain_ as FBSYMCHAIN ptr )
+declare sub symbDumpLookup( byval id as zstring ptr )
+
+'' FBARRAY: 6 pointer/integer fields + the dimTB with 3 integer fields per dimension
+#define symbDescriptorHasRoomFor( sym, dimensions ) (symbGetLen( sym ) >= env.pointersize * (((dimensions) * 3) + 6))
+
 #endif
 
 #if __FB_DEBUG__
@@ -72,6 +98,8 @@ declare function hAstNodeToStr _
 	( _
 		byval n as ASTNODE ptr _
 	) as string
-	
+
+declare function hGetNamespacePrefix( byval sym as FBSYMBOL ptr ) as string
+
 #endif
 
