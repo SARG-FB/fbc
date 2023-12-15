@@ -13,6 +13,9 @@
 #include once "reg.bi"
 #include once "debug-int.bi"
 #include once "emit-private.bi"
+#include once "flist.bi"
+
+common shared regTB() as REGCLASS ptr
 
 '':::::
 '' ppDump      =   '#'DUMP|ODUMP Expression
@@ -78,6 +81,113 @@ end sub
 function emitDumpRegName( byval dtype as integer, byval reg as integer ) as string
 	function = *hGetRegName( dtype, reg )
 end function
+
+sub hDumpFreeIntRegs( )
+	dim as string free, used
+	dim as integer reg = any
+
+	'' For each register in the integer class
+	reg = regTB(FB_DATACLASS_INTEGER)->getFirst( regTB(FB_DATACLASS_INTEGER) )
+	while( reg <> INVALID )
+
+		if( regTB(FB_DATACLASS_INTEGER)->isFree( regTB(FB_DATACLASS_INTEGER), reg ) ) then
+			if( len( free ) > 0 ) then free += ", "
+			free += emitDumpRegName( FB_DATATYPE_INTEGER, reg )
+		else
+			if( len( used ) > 0 ) then used += ", "
+			used += emitDumpRegName( FB_DATATYPE_INTEGER, reg )
+		end if
+
+		reg = regTB(FB_DATACLASS_INTEGER)->getNext( regTB(FB_DATACLASS_INTEGER), reg )
+	wend
+
+	print , "used: " & used & " | free: " & free
+end sub
+
+private sub hDump _
+	( _
+		byval op as integer, _
+		byval v1 as IRVREG ptr, _
+		byval v2 as IRVREG ptr, _
+		byval vr as IRVREG ptr, _
+		byval wrapline as integer = FALSE _
+	)
+
+	dim s as string
+
+	if( astGetOpId( op ) <> NULL ) then
+		s = *astGetOpId( op )
+	else
+		s = str( op )
+	end if
+
+	const MAXLEN = 4
+	select case( len( s ) )
+	case is > MAXLEN
+		s = left( s, MAXLEN )
+	case is < MAXLEN
+		s += space( MAXLEN - len( s ) )
+	end select
+	s = "[" + s + "]"
+
+	#macro hDumpVr( id, v )
+		if( v <> NULL ) then
+			if( wrapline ) then
+				s += !"\t"
+			else
+				s += " "
+			end if
+			s += id + " = " + vregDumpToStr( v )
+			if( wrapline ) then
+				s += NEWLINE
+			else
+				s += !"\t"
+			end if
+		end if
+	#endmacro
+
+	hDumpVr( "d", vr )
+	hDumpVr( "l", v1 )
+	hDumpVr( "r", v2 )
+
+	if( wrapline = FALSE ) then
+		s += NEWLINE
+	end if
+
+	if( (wrapline = FALSE) and (len( s ) > 79) ) then
+		hDump( op, v1, v2, vr, TRUE )
+	else
+		print s;
+	end if
+
+end sub
+
+function tacvregDump( byval tacvreg as IRTACVREG ptr ) as string
+	if( tacvreg = NULL ) then
+		return "<NULL>"
+	end if
+	function = "IRTACVREG( " & _
+		"vreg=" & vregDumpToStr( tacvreg->vreg ) & ", " & _
+		"parent=" & vregDumpToStr( tacvreg->parent ) & ", " & _
+		"next=" & tacvregDump( tacvreg->next ) & " )"
+end function
+
+sub tacDump( byval tac as IRTAC ptr )
+	if( tac = NULL ) then
+		print "IRTAC: <NULL>"
+		exit sub
+	end if
+	print "IRTAC: pos=" & tac->pos & ", op=" & tac->op
+	print , "vr vreg: " & tacvregDump( @tac->vr.reg )
+	print , "vr vidx: " & tacvregDump( @tac->vr.idx )
+	print , "vr vaux: " & tacvregDump( @tac->vr.aux )
+	print , "v1 vreg: " & tacvregDump( @tac->v1.reg )
+	print , "v1 vidx: " & tacvregDump( @tac->v1.idx )
+	print , "v1 vaux: " & tacvregDump( @tac->v1.aux )
+	print , "v2 vreg: " & tacvregDump( @tac->v2.reg )
+	print , "v2 vidx: " & tacvregDump( @tac->v2.idx )
+	print , "v2 vaux: " & tacvregDump( @tac->v2.aux )
+end sub
 
 #endif
 

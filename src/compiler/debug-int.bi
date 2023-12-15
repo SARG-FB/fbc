@@ -23,4 +23,16 @@ declare sub regDump2( byval this_ as REGCLASS ptr )
 
 declare function emitDumpRegName( byval dtype as integer, byval reg as integer ) as string
 
+declare sub hDumpFreeIntRegs( )
+declare sub hDump _
+	( _
+		byval op as integer, _
+		byval v1 as IRVREG ptr, _
+		byval v2 as IRVREG ptr, _
+		byval vr as IRVREG ptr, _
+		byval wrapline as integer = FALSE _
+	)
+declare function tacvregDump( byval tacvreg as IRTACVREG ptr ) as string
+declare sub tacDump( byval tac as IRTAC ptr )
+
 #endif
