@@ -112,6 +112,7 @@ rbp-y -->  local vars
 #include once "lex.bi"
 #include once "ir-private.bi"
 #include once "stabs.bi"
+#include once "debug-int.bi"
 
 '' comment to not get basic data
 '#define basicdata
