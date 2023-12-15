@@ -11,7 +11,8 @@
 #include once "fb.bi"
 #include once "ir.bi"
 #include once "reg.bi"
-
+#include once "debug-int.bi"
+#include once "emit-private.bi"
 
 '':::::
 '' ppDump      =   '#'DUMP|ODUMP Expression
@@ -73,5 +74,10 @@ sub regDump2( byval this_ as REGCLASS ptr )
 		print
 	next
 end sub
+
+'#if (__FB_DEBUG__ <> 0) orelse defined(__GAS64_DEBUG__)
+function emitDumpRegName( byval dtype as integer, byval reg as integer ) as string
+	function = *hGetRegName( dtype, reg )
+end function
 
 #endif

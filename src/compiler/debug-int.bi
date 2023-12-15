@@ -16,4 +16,8 @@ declare sub ppLookup _
 
 declare sub regDump2( byval this_ as REGCLASS ptr )
 
+
+'' #if (__FB_DEBUG__ <> 0) orelse defined(__GAS64_DEBUG__)
+declare function emitDumpRegName( byval dtype as integer, byval reg as integer ) as string
+
 #endif

@@ -10,6 +10,7 @@
 #include once "flist.bi"
 #include once "ir.bi"
 #include once "hlp.bi"
+#include once "debug-int.bi"
 
 type IRTAC_CTX
 	tacTB           as TFLIST
