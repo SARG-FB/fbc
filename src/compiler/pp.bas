@@ -8,6 +8,7 @@
 #include once "lex.bi"
 #include once "parser.bi"
 #include once "pp.bi"
+#include once "debug-int.bi"
 
 #define LEX_FLAGS (LEXCHECK_NOWHITESPC or _
 	LEXCHECK_NOSUFFIX or _
@@ -27,20 +28,6 @@ declare sub ppLibPath( )
 declare sub ppLine()
 declare sub ppLang()
 declare sub ppCmdline()
-
-#if __FB_DEBUG__
-
-declare sub ppDumpTree _
-	( _
-		byval optimize as integer = FALSE _
-	)
-
-declare sub ppLookup _
-	( _
-	)
-
-#endif
-
 
 '' globals
 	dim shared as PP_CTX pp
@@ -465,49 +452,6 @@ private sub ppLang( )
 	fbChangeOption( FB_COMPOPT_LANG, id )
 	lexSkipToken( )
 end sub
-
-#if __FB_DEBUG__
-
-'':::::
-'' ppDump      =   '#'DUMP|ODUMP Expression
-''
-private sub ppDumpTree _
-	( _
-		byval optimize as integer _
-	)
-
-	dim as ASTNODE ptr expr = any
-
-	expr = cExpression( )
-
-	if( expr <> NULL ) then
-
-		if( optimize ) then
-			expr = astOptimizeTree( expr )
-		end if
-
-		astDumpTree( expr )
-
-		astDelTree( expr )
-	else
-		errReport( FB_ERRMSG_SYNTAXERROR )
-	end if
-
-end sub
-
-'':::::
-'' ppLookup    =   '#'LOOKUP name
-''
-private sub ppLookup _
-	( _
-	)
-
-	symbDumpLookup( lexGetText( ) )
-	lexSkipToken( )
-
-end sub
-
-#endif
 
 '':::::
 private sub hRtrimMacroText _
