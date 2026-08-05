@@ -31,6 +31,9 @@ Version 1.20.0
 - __FB_QUERY_SYMBOL__( fbc.FB_QUERY_SYMBOL.mangletype, symbol ) returns the mangled type name of symbol
 - headers: portaudio version 19.7.0 - based on pa_stable_v190700_20210406
 - gas64: improve performance of gas64 back-end (SARG)
+- fbc : param 'byref as any' can be used after the procedure define
+- fbc : procedures named with an asm keyword are allowed (except if alias/export)
+- fbc : variables named with an asm keyword are allowed (except if extern)
 
 [added]
 - x86_64: optimize SHL MOD INTDIV to use 32-bit operation when result will be converted to long/ulong
@@ -114,6 +117,11 @@ Version 1.20.0
 - sf.net #795: unsupported \UNNNN escape sequence is miscompiled - expect "\Unnnnnnnn" escape to have 8 digits
 - fbc: unicode code points in UTF-8 and UTF-32LE/BE encoded files were incorrectly converted to UTF-16LE/BE surrogate pairs when code point was in a supplementary planes (codepoints greate than U+FFFF)
 - fbc: fix source typo where bitfield FB_UDTOPT_HASFILLEDFIELD was overlapping FB_UDTOPT_VALISTTYPEMASK possibly causing bad code generation for UDT's with STRING*N fields
+- fbc : calling a macro without parens and followed by a comment like VA foo 'breaks
+- fbc : for -lang qb, adding L in HIBYTE and LOWORD macros
+- gas64 : RBX must be preserved and 2 special cases were not handled
+- gas64 : wrong instruction movd instead mvss in optimizer (OPTIMIZATION 3-1)
+- gas64 : fix and refactoring in emitStoreStruct()
 
 
 Version 1.10.3
