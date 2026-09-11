@@ -7942,8 +7942,7 @@ private sub _emitprocbegin(byval proc as FBSYMBOL ptr,byval initlabel as FBSYMBO
 	ctx.opepass=0
 
 	ctx.variadic=false
-	dim as integer ptr textptr=cast(integer ptr,varptr(ctx.proc_txt))+1
-	*textptr=0 ''optimized replacement of ctx.proc_txt=""
+	*(cast(integer ptr,varptr(ctx.proc_txt))+1)=0 ''optimized replacement of ctx.proc_txt=""
 	ctx.section=SECTION_PROLOG
 	ctx.proccalling=false
 	ctxdbg.lnum=-1
